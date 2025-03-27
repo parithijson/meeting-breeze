@@ -26,7 +26,7 @@ const Dashboard: React.FC = () => {
         
         <div className="animate-slide-up" style={{ animationDelay: "0.2s" }}>
           <h2 className="text-xl font-medium mb-3">2. Start Your Meeting</h2>
-          <MeetingForm pdfUploaded={!!pdfFile} />
+          <MeetingForm pdfUploaded={!!pdfFile} pdfFile={pdfFile} />
         </div>
       </div>
 

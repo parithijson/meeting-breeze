@@ -1,4 +1,6 @@
+
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import BreathingButton from "./ui-elements/BreathingButton";
@@ -7,11 +9,13 @@ import { toast } from "sonner";
 
 interface MeetingFormProps {
   pdfUploaded: boolean;
+  pdfFile: File | null;
 }
 
-const MeetingForm: React.FC<MeetingFormProps> = ({ pdfUploaded }) => {
+const MeetingForm: React.FC<MeetingFormProps> = ({ pdfUploaded, pdfFile }) => {
   const [meetingLink, setMeetingLink] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const navigate = useNavigate();
 
   const handleStartMeeting = () => {
     if (!meetingLink) {
@@ -19,19 +23,34 @@ const MeetingForm: React.FC<MeetingFormProps> = ({ pdfUploaded }) => {
       return;
     }
 
-    if (!pdfUploaded) {
+    if (!pdfUploaded || !pdfFile) {
       toast.error("Please upload a PDF document first");
       return;
     }
 
     setIsProcessing(true);
 
+    // Create a new meeting
+    const newMeeting = {
+      id: Date.now().toString(),
+      link: meetingLink,
+      documentName: pdfFile.name,
+      status: 'waiting',
+      createdAt: new Date().toISOString()
+    };
+
+    // Store in localStorage
+    const existingMeetings = localStorage.getItem('meetings');
+    const meetings = existingMeetings ? JSON.parse(existingMeetings) : [];
+    meetings.push(newMeeting);
+    localStorage.setItem('meetings', JSON.stringify(meetings));
+
     // Simulate processing
     setTimeout(() => {
-      toast.success("Meeting started successfully");
-      // In a real app, you would navigate to the meeting page or open a new window
+      toast.success("Meeting created successfully");
       setIsProcessing(false);
-    }, 3000);
+      navigate('/meetings');
+    }, 2000);
   };
 
   return (
