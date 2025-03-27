@@ -36,7 +36,7 @@ export interface Meeting {
   candidateName?: string;
   candidateEmail?: string;
   results?: CandidateResult[];
-  recording?: Recording; // Changed from recordings array to a single recording
+  recordings?: Recording[];
   overallScore?: number;
   finalScore?: number;
   summary?: string;
