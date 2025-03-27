@@ -19,6 +19,13 @@ export interface Recording {
   timestamp: string;
 }
 
+export interface PerformanceMetric {
+  name: string;
+  score: number;
+  maxScore: number;
+  feedback: string;
+}
+
 export interface Meeting {
   id: string;
   title?: string;
@@ -31,5 +38,7 @@ export interface Meeting {
   results?: CandidateResult[];
   recordings?: Recording[];
   overallScore?: number;
+  finalScore?: number;
   summary?: string;
+  performanceMetrics?: PerformanceMetric[];
 }

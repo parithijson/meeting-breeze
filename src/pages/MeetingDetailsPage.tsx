@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { 
@@ -9,14 +8,28 @@ import {
   Video, 
   ChevronLeft,
   Star,
-  MessageSquare
+  MessageSquare,
+  BarChart
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import GlassCard from "@/components/ui-elements/GlassCard";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Meeting, CandidateResult, Recording, MeetingStatus } from "@/types/meeting";
+import { 
+  Meeting, 
+  CandidateResult, 
+  Recording, 
+  MeetingStatus, 
+  PerformanceMetric 
+} from "@/types/meeting";
+import { 
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const useMeetingDetails = (meetingId: string) => {
   const storedMeetings = localStorage.getItem('meetings');
@@ -26,7 +39,6 @@ const useMeetingDetails = (meetingId: string) => {
   
   if (!meeting) return null;
   
-  // Add mock data for demonstration if no results or recordings exist
   if (!meeting.results) {
     meeting.results = [
       {
@@ -93,13 +105,41 @@ const useMeetingDetails = (meetingId: string) => {
   }
   
   if (!meeting.overallScore) {
-    // Calculate overall score as average of individual scores
     const totalScore = meeting.results.reduce((sum: number, result: CandidateResult) => sum + result.score, 0);
     meeting.overallScore = totalScore / meeting.results.length;
   }
   
+  if (!meeting.performanceMetrics) {
+    meeting.performanceMetrics = [
+      {
+        name: "Code Quality",
+        score: 2,
+        maxScore: 10,
+        feedback: "The code is extremely rudimentary and completely fails to address the prompt. It initializes a Node.js environment, prints \"hi\" to the console, and does nothing related to finding the second largest number in an array. There's no logic, no algorithm, and no attempt to handle edge cases (like an array with fewer than two elements). It's essentially a placeholder."
+      },
+      {
+        name: "Communication",
+        score: 1,
+        maxScore: 10,
+        feedback: "The candidate provided irrelevant responses (\"yeah fine,\" \"hello\") to questions about their family and then offered a completely unhelpful and non-responsive snippet of code. There is no explanation of the intended approach, no discussion of algorithms, and no consideration of how the code would work. The candidate doesn't demonstrate even a basic understanding of the problem."
+      },
+      {
+        name: "Consistency & Logical Flow",
+        score: 0,
+        maxScore: 10,
+        feedback: "There is no logical flow. The responses are disjointed and random. The code snippet appears to be an afterthought with no connection to the previous questions or the problem being asked."
+      }
+    ];
+  }
+  
+  if (!meeting.finalScore) {
+    meeting.finalScore = meeting.performanceMetrics
+      ? meeting.performanceMetrics.reduce((sum, metric) => sum + metric.score, 0)
+      : 0;
+  }
+  
   if (!meeting.summary) {
-    meeting.summary = "The candidate demonstrated strong technical knowledge in React and frontend development. Their communication skills were excellent, and they provided clear, concise answers to all questions. They showed good problem-solving abilities and a solid understanding of web development best practices. Based on their performance, they would be a valuable addition to the team.";
+    meeting.summary = "This candidate demonstrated a significant lack of preparation and understanding of the interview. Their initial responses were unhelpful and the code provided was completely irrelevant. They showed no ability to apply their technical knowledge to a given problem and lack the communication skills to explain their thought process. This response suggests a very low level of competency in both programming and interview etiquette. There's a need for substantial improvement in both areas.";
   }
   
   if (!meeting.candidateName) {
@@ -153,6 +193,13 @@ const formatDate = (date: Date) => {
   }).format(date);
 };
 
+const getScoreColor = (score: number, maxScore: number) => {
+  const percentage = (score / maxScore) * 100;
+  if (percentage >= 70) return "text-green-600";
+  if (percentage >= 40) return "text-yellow-600";
+  return "text-red-600";
+};
+
 const MeetingDetailsPage: React.FC = () => {
   const { meetingId } = useParams<{ meetingId: string }>();
   const navigate = useNavigate();
@@ -178,6 +225,13 @@ const MeetingDetailsPage: React.FC = () => {
   const scoreColor = meeting.overallScore >= 8 
     ? "text-green-600" 
     : meeting.overallScore >= 6 
+      ? "text-yellow-600" 
+      : "text-red-600";
+  
+  const finalScorePercentage = meeting.finalScore ? (meeting.finalScore / (meeting.performanceMetrics?.length || 1) / 10) * 100 : 0;
+  const finalScoreColor = finalScorePercentage >= 70 
+    ? "text-green-600" 
+    : finalScorePercentage >= 40 
       ? "text-yellow-600" 
       : "text-red-600";
 
@@ -211,10 +265,10 @@ const MeetingDetailsPage: React.FC = () => {
             
             <div className="flex flex-col items-center">
               <div className="text-3xl font-bold flex items-center gap-1">
-                <span className={scoreColor}>{meeting.overallScore.toFixed(1)}</span>
-                <Star className={`w-6 h-6 ${scoreColor}`} />
+                <span className={finalScoreColor}>{meeting.finalScore || 0}</span>
+                <span className="text-sm text-muted-foreground">/100</span>
               </div>
-              <span className="text-sm text-muted-foreground">Overall Score</span>
+              <span className="text-sm text-muted-foreground">Final Score</span>
             </div>
           </div>
 
@@ -252,6 +306,43 @@ const MeetingDetailsPage: React.FC = () => {
             <p className="text-sm text-muted-foreground">
               {meeting.summary}
             </p>
+          </div>
+        </GlassCard>
+        
+        <GlassCard className="p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <BarChart className="w-5 h-5 text-muted-foreground" />
+            <h2 className="text-xl font-semibold">Performance Evaluation</h2>
+          </div>
+          
+          <Accordion type="single" collapsible className="w-full">
+            {meeting.performanceMetrics?.map((metric, index) => (
+              <AccordionItem key={index} value={`metric-${index}`}>
+                <AccordionTrigger className="py-4 hover:no-underline">
+                  <div className="flex justify-between w-full pr-4">
+                    <span>{metric.name}</span>
+                    <span className={getScoreColor(metric.score, metric.maxScore)}>
+                      {metric.score}/{metric.maxScore}
+                    </span>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <Alert className="mb-4">
+                    <AlertTitle>Feedback</AlertTitle>
+                    <AlertDescription>
+                      {metric.feedback}
+                    </AlertDescription>
+                  </Alert>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+          
+          <div className="mt-6 pt-4 border-t flex justify-between items-center">
+            <span className="font-semibold">Final Score:</span>
+            <span className={`font-bold text-lg ${finalScoreColor}`}>
+              {meeting.finalScore || 0}/100
+            </span>
           </div>
         </GlassCard>
         
