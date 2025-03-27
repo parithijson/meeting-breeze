@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import GlassCard from "./ui-elements/GlassCard";
@@ -8,7 +7,7 @@ import {
   Calendar, 
   Clock, 
   Play,
-  Stop,
+  Square,
   Loader,
   Video
 } from "lucide-react";
@@ -23,13 +22,10 @@ import {
 } from "@/components/ui/table";
 import { toast } from "sonner";
 
-// This would be replaced with a proper state management solution
-// like React Query or a context in a real application
 const useMeetings = () => {
   const storedMeetings = localStorage.getItem('meetings');
   const meetings = storedMeetings ? JSON.parse(storedMeetings) : [];
   
-  // Parse dates back to Date objects
   return meetings.map((meeting: any) => ({
     ...meeting,
     createdAt: new Date(meeting.createdAt)
@@ -55,7 +51,7 @@ const StatusBadge: React.FC<{ status: MeetingStatus }> = ({ status }) => {
       case 'active':
         return <Play className="w-4 h-4" />;
       case 'stopped':
-        return <Stop className="w-4 h-4" />;
+        return <Square className="w-4 h-4" />;
       case 'waiting':
         return <Loader className="w-4 h-4" />;
       default:
@@ -76,11 +72,9 @@ const MeetingsList: React.FC = () => {
   const navigate = useNavigate();
 
   const handleMeetingAction = (meetingId: string, action: 'start' | 'stop') => {
-    // Get meetings from localStorage
     const storedMeetings = localStorage.getItem('meetings');
     const meetings = storedMeetings ? JSON.parse(storedMeetings) : [];
     
-    // Find and update the meeting
     const updatedMeetings = meetings.map((meeting: any) => {
       if (meeting.id === meetingId) {
         return {
@@ -91,14 +85,10 @@ const MeetingsList: React.FC = () => {
       return meeting;
     });
     
-    // Save back to localStorage
     localStorage.setItem('meetings', JSON.stringify(updatedMeetings));
     
-    // Show toast
     toast.success(`Meeting ${action === 'start' ? 'started' : 'stopped'} successfully`);
     
-    // Force a re-render by reloading the page
-    // In a real app, you'd use a state management solution instead
     window.location.reload();
   };
 
@@ -180,7 +170,7 @@ const MeetingsList: React.FC = () => {
                         size="sm"
                         onClick={() => handleMeetingAction(meeting.id, 'stop')}
                       >
-                        <Stop className="w-4 h-4 mr-1" /> Stop
+                        <Square className="w-4 h-4 mr-1" /> Stop
                       </Button>
                     )}
                   </TableCell>
