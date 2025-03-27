@@ -1,10 +1,9 @@
-
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import BreathingButton from "./ui-elements/BreathingButton";
 import GlassCard from "./ui-elements/GlassCard";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "sonner";
 
 interface MeetingFormProps {
   pdfUploaded: boolean;

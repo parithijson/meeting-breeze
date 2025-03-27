@@ -1,7 +1,7 @@
 
 import React, { useState, useRef } from "react";
 import { cn } from "@/lib/utils";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "sonner";
 import GlassCard from "./ui-elements/GlassCard";
 
 interface UploadAreaProps {
