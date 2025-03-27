@@ -5,7 +5,6 @@ import { Button } from "./ui/button";
 import { Meeting, MeetingStatus } from "@/types/meeting";
 import { 
   Calendar, 
-  Clock, 
   Play,
   Square,
   Loader,
@@ -102,6 +101,10 @@ const MeetingsList: React.FC = () => {
     }).format(date);
   };
 
+  const navigateToMeetingDetails = (meetingId: string) => {
+    navigate(`/meetings/${meetingId}`);
+  };
+
   return (
     <div className="w-full max-w-5xl mx-auto p-4 space-y-8">
       <GlassCard className="p-8 text-center animate-slide-down">
@@ -140,7 +143,11 @@ const MeetingsList: React.FC = () => {
             </TableHeader>
             <TableBody>
               {meetings.map((meeting: Meeting) => (
-                <TableRow key={meeting.id}>
+                <TableRow 
+                  key={meeting.id} 
+                  className="cursor-pointer hover:bg-gray-50"
+                  onClick={() => navigateToMeetingDetails(meeting.id)}
+                >
                   <TableCell className="font-medium">{meeting.documentName}</TableCell>
                   <TableCell className="max-w-[200px] truncate">{meeting.link}</TableCell>
                   <TableCell>
@@ -152,7 +159,7 @@ const MeetingsList: React.FC = () => {
                   <TableCell>
                     <StatusBadge status={meeting.status} />
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                     {meeting.status === 'waiting' || meeting.status === 'stopped' ? (
                       <Button 
                         variant="outline" 
